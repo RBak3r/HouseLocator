@@ -1,0 +1,84 @@
+{% extends "Base.html" %} 
+
+{% block title %}HomeSearch - House Map{% endblock %}
+
+ {% block content %}
+ <h1>See you ideal homes below</h1>
+ 
+
+<style>
+/* css to customize Leaflet default styles  */
+.popupCustom .leaflet-popup-tip,
+.popupCustom .leaflet-popup-content-wrapper {
+    background: #e0e0e0;
+    color: #234c5e;
+}
+</style>
+
+ <div id="map" style="height: 750px; width: 1250px; left: 100px">
+ 
+
+ 
+ <script type="text/javascript">
+ 
+         // Add an interactive map to the web page //
+ 
+         var map = new L.Map('map').setView([53.466502, -2.235387], 12);                       
+         var layer = L.tileLayer('http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
+              attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="http://cartodb.com/attributions">CartoDB</a>'
+         }).addTo(map);    
+         
+         // Create a variable of algorithm results //
+         
+         var homes = JSON.parse('{{ homeMasterJSON | safe }}'); 
+         
+         // Log to console to check it has beensent correctly //
+         
+         console.log(homes);
+         
+         // Make variable of important features for each property to be used in the pop-up //
+        
+         for (var i = 0; i < homes.features.length; i++) {
+             var home = homes.features[i];
+             var lat = home.properties['Lat'];
+             var lng = home.properties['Long']
+             var url = home.properties['Details url'];
+             var rank = home.properties['Master rank'];
+             var picture = home.properties['Image']
+             var crimNum = home.properties['Crime number']
+             if (crimNum == "0") {crimNum = "Null or not recorded"};
+             var air = ("<b>" + parseInt(home.properties['Air Quality']).toFixed(1) + "</b> NO2/month ug/m3,   Rank: " + "<b>" + home.properties['Air Quality rank']);
+             var crime = (" No. of Crimes: " + "<b>" + crimNum + "</b>  Rank: " + "<b>" + home.properties['Crime rank']);
+             var flood = ("<b>" + home.properties['Flood Risk'] + " </b> flood likelihood/1000 years,  Rank: " + "<b>" + home.properties['Flood rank']);
+             var GP = ("</b> GP Rank: <b>" + home.properties['GP rank']);
+             var hosp = ("</b> Hospital Rank:  <b>" + home.properties['Hospital rank']);
+             var green = ("</b> Green Space Rank: <b>" + home.properties['Green Space rank']);
+             var market = ("</b> Supermarket Rank: <b>" + home.properties['Supermarket rank']);
+             var train = ("</b> Train Station Rank: <b>" + home.properties['Train station rank']);
+             var pub = (" </b> Pub Rank: <b>" + home.properties['Pub rank']);
+             var school = (" </b> School Rank: <b>" + home.properties['School rank']);
+             var price = ("</b> Price: <b>£" + home.properties['Price'].toLocaleString('en-UK'));
+             var popupContent =  "<p><b>" + "<center> <img src=" + picture + "> <a href=" + url + "> <br><br> <center> Click Here To View Your New Home </a>  <br><br>" + price + "<br><br> </b>Overall Ranking: <b>" +
+              rank + "</b> <br><br> Air Quality: " + air + "</b> <br><br> Crime: " + crime + "<br><br></b> Flood Risk: " + flood + " <br><br> " + GP + hosp  + " <br><br> " + green + market + " <br><br> " + train + pub + school;
+            
+              
+             // Customise options for the pop-up //
+             
+             var customOptions =
+                {
+                'minWidth': '450',
+                'className' : 'popupCustom'
+                }
+              
+             // Add markers with pop-ups to the map //
+                       
+             var marker = new L.marker({lat, lng}).addTo(map)
+             .bindPopup(popupContent, customOptions).openPopup()
+             }
+  
+  </script>
+ </div>
+ 
+ <img src="https://www.zoopla.co.uk/static/images/mashery/powered-by-zoopla-150x73.png" width="150" height="73" title="Property information powered by Zoopla" alt="Property information powered by Zoopla" border="0">
+ 
+ {% endblock %}
